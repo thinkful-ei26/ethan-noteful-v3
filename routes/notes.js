@@ -20,15 +20,15 @@ router.get('/', (req, res, next) => {
       }
       return Note.find(filter).sort({updatedAt: 'desc'});
     })
-    .then(result => {
-      res.json(result);
+    .then(results => {
+      res.json(results);
     })
     .then(() => {
       return mongoose.disconnect();
     })
     .catch(err => {
       console.error(`ERROR: ${err.message}`);
-      console.error(err);
+      next(err);
     });
 });
 
@@ -40,14 +40,14 @@ router.get('/:id', (req, res, next) => {
       return Note.findById(id);
     })
     .then(results => {
-      console.log(results);
+      res.json(results);
     })
     .then(() => {
       return mongoose.disconnect();
     })
     .catch(err => {
       console.error(`ERROR: ${err.message}`);
-      console.error(err);
+      next(err);
     });
   // console.log('Get a Note');
   // res.json({ id: 1, title: 'Temp 1' });
@@ -56,7 +56,27 @@ router.get('/:id', (req, res, next) => {
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
-
+  mongoose.connect(MONGODB_URI, { useNewUrlParser: true })
+    .then(() => {
+      const newNote = {
+        title: 'test',
+        content: 'words'
+      };
+      Note.create({
+        title: newNote.title,
+        content: newNote.content
+      })
+        .then(results => {
+          console.log(results);
+        })
+        .then(() => {
+          return mongoose.disconnect();
+        })
+        .catch(err => {
+          console.error(`ERROR: ${err.message}`);
+          console.error(err);
+        });
+    });
   console.log('Create a Note');
   res.location('path/to/new/document').status(201).json({ id: 2, title: 'Temp 2' });
 

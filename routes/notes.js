@@ -58,35 +58,59 @@ router.get('/:id', (req, res, next) => {
 router.post('/', (req, res, next) => {
   mongoose.connect(MONGODB_URI, { useNewUrlParser: true })
     .then(() => {
+      const { title, content } = req.body;
       const newNote = {
-        title: 'test',
-        content: 'words'
+        title: title,
+        content: content
       };
-      Note.create({
+      if (!newNote.title) {
+        const err = new Error('Missing `title` in request body');
+        err.status = 400;
+        return next(err);
+      }
+    
+      return Note.create({
         title: newNote.title,
         content: newNote.content
       })
+        .then((result) => {
+          res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);
+        });
+    })
+    .then(() => {
+      return mongoose.disconnect();
+    })
+    .catch(err => {
+      console.error(`ERROR: ${err.message}`);
+      next(err);
+    });
+
+});
+
+/* ========== PUT/UPDATE A SINGLE ITEM ========== */
+router.put('/:id', (req, res, next) => {
+  mongoose.connect(MONGODB_URI, { useNewUrlParser: true })
+    .then(() => {
+      const id = req.params.id;
+      const { title, content } = req.body;
+      const updateNote = {
+        title: title,
+        content: content
+      };
+      Note.findByIdAndUpdate(id, { $set: {title: updateNote.title, content: updateNote.content} }, {new: true})
         .then(results => {
-          console.log(results);
+          res.json(results);
         })
         .then(() => {
           return mongoose.disconnect();
         })
         .catch(err => {
           console.error(`ERROR: ${err.message}`);
-          console.error(err);
+          next(err);
         });
     });
-  console.log('Create a Note');
-  res.location('path/to/new/document').status(201).json({ id: 2, title: 'Temp 2' });
-
-});
-
-/* ========== PUT/UPDATE A SINGLE ITEM ========== */
-router.put('/:id', (req, res, next) => {
-
-  console.log('Update a Note');
-  res.json({ id: 1, title: 'Updated Temp 1' });
+  // console.log('Update a Note');
+  // res.json({ id: 1, title: 'Updated Temp 1' });
 
 });
 

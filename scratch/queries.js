@@ -28,3 +28,20 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true })
   });
 
   
+
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true })
+  .then(() => {
+    const testId = '000000000000000000000000';
+    
+    return Note.findById(testId);
+  })
+  .then(results => {
+    console.log(results);
+  })
+  .then(() => {
+    return mongoose.disconnect();
+  })
+  .catch(err => {
+    console.error(`ERROR: ${err.message}`);
+    console.error(err);
+  });

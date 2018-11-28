@@ -56,10 +56,11 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
   
-  Note.create({
-    title: newNote.title,
-    content: newNote.content
-  })
+  // Note.create({
+  //   title: newNote.title,
+  //   content: newNote.content
+  // })
+  Note.create(newNote)
     .then((result) => {
       res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);
     })

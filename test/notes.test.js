@@ -48,7 +48,7 @@ describe('POST /api/notes', function () {
         expect(res).to.have.header('location');
         expect(res).to.be.json;
         expect(res.body).to.be.a('object');
-        expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt')
+        expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
         return Note.findById(res.body.id);
       })
       .then(data => {
@@ -60,6 +60,13 @@ describe('POST /api/notes', function () {
       });
   });
 });
+
+describe('PUT /api/notes/:id', function (){
+  it('should update and return the correct note')
+
+})
+
+
 
 describe('GET /api/notes/:id', function (){
   it('should return correct note', function(){
@@ -79,6 +86,21 @@ describe('GET /api/notes/:id', function (){
         expect(res.body.content).to.equal(data.content);
         expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
         expect(new Date(res.body.updatedAt)).to.eql(data.updatedAt);
+      });
+  });
+});
+
+describe('GET /api/notes', function () {
+  it('should return all notes', function() {
+    return Promise.all([
+      Note.find(),
+      chai.request(app).get('/api/notes')
+    ])
+      .then(([data, res]) => {
+        expect(res).to.have.status(200);
+        expect(res).to.be.json;
+        expect(res.body).to.be.a('array');
+        expect(res.body).to.have.length(data.length);
       });
   });
 });

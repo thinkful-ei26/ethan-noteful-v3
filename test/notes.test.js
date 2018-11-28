@@ -32,6 +32,7 @@ after(function () {
 });
 
 describe('POST /api/notes', function () {
+  
   it('should create and return a new item when provided valid data', function () {
     const newItem = {
       'title': 'The best article about cats ever!',
@@ -60,9 +61,40 @@ describe('POST /api/notes', function () {
         expect(new Date(res.body.updatedAt)).to.eql(data.updatedAt);
       });
   });
+
+  it('should throw an error when given an item without a title', function () {
+    const newItem = {
+      'content': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor...'
+    };
+
+    let res;
+    return chai.request(app)
+      .post('/api/notes')
+      .send(newItem)
+      .then(function (_res) {
+        res = _res;
+        expect(res).to.have.status(400);
+        // console.log(res.error);
+        expect(res.error.text).to.equal('{"status":400,"message":"Missing `title` in request body"}');
+        // expect(res).to.have.header('location');
+        // expect(res).to.be.json;
+        // expect(res.body).to.be.a('object');
+        // expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+        // return Note.findById(res.body.id);
+      });
+    // .then(data => {
+    //   // console.log(data);
+    //   expect(res.body.id).to.equal(data.id);
+    //   expect(res.body.title).to.equal(data.title);
+    //   expect(res.body.content).to.equal(data.content);
+    //   expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
+    //   expect(new Date(res.body.updatedAt)).to.eql(data.updatedAt);
+    // });
+  });
 });
 
 describe('PUT /api/notes/:id', function (){
+  
   it('should update and return the correct note', function (){
     const updateItem = {
       'title': 'newwww',
@@ -118,6 +150,7 @@ describe('GET /api/notes/:id', function (){
 });
 
 describe('DELETE /api/notes/:id', function (){
+  
   it('should delete the correct note', function (){
     // const deleteId = '000000000000000000000003';
     let data;
@@ -149,6 +182,7 @@ describe('DELETE /api/notes/:id', function (){
 });
 
 describe('GET /api/notes', function () {
+  
   it('should return all notes', function() {
     return Promise.all([
       Note.find(),
@@ -161,23 +195,26 @@ describe('GET /api/notes', function () {
         expect(res.body).to.have.length(data.length);
       });
   });
-  it('should return correct note', function(){
-    let data;
-    return Note.findOne()
-      .then(_data => {
-        data = _data;
-        return chai.request(app).get(`/api/notes/${data.id}`);
+  
+  it('should return correct notes for a search term', function(){
+    let searchTerm = 'Gaga';
+    let filter = {};
+    if (searchTerm) {
+      filter.title = { $regex: searchTerm, $options: 'i'};
+    }
+    return Note.find(filter)
+      .then(() => {
+        return chai.request(app).get(`/api/notes/?searchTerm=${searchTerm}`);
       })
       .then((res) => {
         expect(res).to.have.status(200);
         expect(res).to.be.json;
-        expect(res.body).to.be.an('object');
-        expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
-        expect(res.body.id).to.equal(data.id);
-        expect(res.body.title).to.equal(data.title);
-        expect(res.body.content).to.equal(data.content);
-        expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
-        expect(new Date(res.body.updatedAt)).to.eql(data.updatedAt);
+        expect(res.body).to.be.an('array');
+        expect(res.body[0]).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+        // console.log(res.body[0]);
+        // expect(res.body[0].id).to.equal(data.id);
+        expect(res.body[0].title).to.include(searchTerm);
+        // expect(res.body[0].content).to.equal(data.content);
       });
   });
 });

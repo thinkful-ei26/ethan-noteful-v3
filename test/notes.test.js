@@ -60,3 +60,25 @@ describe('POST /api/notes', function () {
       });
   });
 });
+
+describe('GET /api/notes/:id', function (){
+  it('should return correct note', function(){
+    let data;
+    return Note.findOne()
+      .then(_data => {
+        data = _data;
+        return chai.request(app).get(`/api/notes/${data.id}`);
+      })
+      .then((res) => {
+        expect(res).to.have.status(200);
+        expect(res).to.be.json;
+        expect(res.body).to.be.an('object');
+        expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+        expect(res.body.id).to.equal(data.id);
+        expect(res.body.title).to.equal(data.title);
+        expect(res.body.content).to.equal(data.content);
+        expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
+        expect(new Date(res.body.updatedAt)).to.eql(data.updatedAt);
+      });
+  });
+});

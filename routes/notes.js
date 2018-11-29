@@ -14,8 +14,12 @@ router.get('/', (req, res, next) => {
   let filter = {};
   
   if (searchTerm) {
-    filter.title = { $regex: searchTerm, $options: 'i'};
+    const re = new RegExp(searchTerm, 'i');
+    filter.$or = [{ 'title': re }, { 'content': re }];
   }
+  // if (searchTerm) {
+  //   filter.title = { $regex: searchTerm, $options: 'i'};
+  // }
   
   Note.find(filter).sort({updatedAt: 'desc'})
     .then(results => {
@@ -30,6 +34,12 @@ router.get('/', (req, res, next) => {
 /* ========== GET/READ A SINGLE ITEM ========== */
 router.get('/:id', (req, res, next) => {
   const id = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    const err = new Error('The `id` is not valid');
+    err.status = 400;
+    return next(err);
+  }
   
   Note.findById(id)
     .then(results => {

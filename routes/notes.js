@@ -11,8 +11,13 @@ const router = express.Router();
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
   const searchTerm = req.query.searchTerm;
+  const folderId = req.query.folderId;
   let filter = {};
   
+  if (folderId) {
+    filter.folderId =  folderId;
+  }
+
   if (searchTerm) {
     const re = new RegExp(searchTerm, 'i');
     filter.$or = [{ 'title': re }, { 'content': re }];
@@ -34,6 +39,7 @@ router.get('/', (req, res, next) => {
 /* ========== GET/READ A SINGLE ITEM ========== */
 router.get('/:id', (req, res, next) => {
   const id = req.params.id;
+  const folderId = req.query.folderId;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     const err = new Error('The `id` is not valid');
@@ -53,6 +59,7 @@ router.get('/:id', (req, res, next) => {
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
+  const folderId = req.query.folderId;
   const { title, content } = req.body;
   const newNote = {
     title, content
@@ -66,6 +73,12 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
   
+  if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
+    const err = new Error('The folder `id` is not valid');
+    err.status = 400;
+    return next(err);
+  }
+
   // Note.create({
   //   title: newNote.title,
   //   content: newNote.content
@@ -82,6 +95,7 @@ router.post('/', (req, res, next) => {
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/:id', (req, res, next) => {
+  const folderId = req.query.folderId;
   const id = req.params.id;
   const { title, content } = req.body;
   const updateNote = {
@@ -89,6 +103,12 @@ router.put('/:id', (req, res, next) => {
     content: content
   };
   
+  if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
+    const err = new Error('The folder `id` is not valid');
+    err.status = 400;
+    return next(err);
+  }
+
   if (!mongoose.Types.ObjectId.isValid(id)) {
     const err = new Error('The `id` is not valid');
     err.status = 400;

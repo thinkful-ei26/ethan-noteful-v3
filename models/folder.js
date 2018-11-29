@@ -16,4 +16,4 @@ folderSchema.set('toJSON', {
   }
 });
 
-module.exports = mongoose.model('Folder', folderSchema)
+module.exports = mongoose.model('Folder', folderSchema);

@@ -79,7 +79,83 @@ describe('Noteful API - Folders', function () {
           res = _res;
           expect(res).to.have.status(400);
           // console.log(res.error);
+          expect(res.body).to.be.a('object');
           expect(res.error.text).to.equal('{"status":400,"message":"Missing `name` in request body"}');
+        });
+    });
+    
+    it('should throw an error when given a duplicate name', function () {
+      return Folder.findOne()
+        .then(data => {
+          const newItem = { 'name': data.name };
+          return chai.request(app).post('/api/folders').send(newItem);
+        })
+        .then(res => {
+          expect(res).to.have.status(400);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.error.text).to.equal('{"status":400,"message":"The folder name already exists"}');
+        });
+    });
+  });
+
+  describe('PUT update folders', function () {
+    
+    it('should update and return a new folder when provided valid data', function () {
+      // const updateFolder = {'name': 'CATS!'};
+      const updateFolder = { 'name': 'CATS!' };
+      return Folder.findOne()
+        .then(data => {
+          // const newItem = { 'name': data.name };
+          updateFolder.id = data.id;
+          // console.log(updateFolder);
+          return chai.request(app).put(`/api/folders/${data.id}`).send(updateFolder);
+        })
+        .then(res => {
+          // console.log(res.body);
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body).to.have.keys('id', 'name', 'createdAt', 'updatedAt');
+          expect(res.body.id).to.equal(updateFolder.id);
+          expect(res.body.name).to.equal(updateFolder.name);
+        });
+    });
+
+    it('should throw an error when given a duplicate name', function () {
+      const newItem = {};
+      return Folder.findOne()
+        .then(data => {
+          newItem.name = data.name;
+          newItem.id = data.id;
+          return chai.request(app).put(`/api/folders/${data.id}`).send(newItem);
+        })
+        .then(res => {
+          expect(res).to.have.status(400);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.error.text).to.equal('{"status":400,"message":"The folder name already exists"}');
+        });
+
+    });
+  });
+
+  describe('DELETE /api/folders/:id', function () {
+
+    it('should delete an existing document and respond with 204', function () {
+      let data;
+      return Folder.findOne()
+        .then(_data => {
+          data = _data;
+          return chai.request(app).delete(`/api/folders/${data.id}`);
+        })
+        .then(function (res) {
+          expect(res).to.have.status(204);
+          expect(res.body).to.be.empty;
+          return Folder.countDocuments({ _id: data.id });
+        })
+        .then(count => {
+          expect(count).to.equal(0);
         });
     });
   });

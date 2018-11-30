@@ -3,17 +3,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 
-const Folder = require('../models/folder');
+const Tag = require('../models/tag');
 const Note = require('../models/note');
 
 
 const router = express.Router();
 
-
-
-// GET ALL FOLDERS
+// GET ALL TAGS
 router.get('/', (req, res, next) => {
-  Folder.find({}).sort({name: 'asc'})
+  Tag.find({}).sort({name: 'asc'})
     .then(results => {
       res.json(results);
     })
@@ -23,8 +21,7 @@ router.get('/', (req, res, next) => {
     });
 });
 
-//GET FOLDER BY ID
-
+// GET TAGS BY ID
 router.get('/:id', (req, res, next) => {
   const id = req.params.id;
 
@@ -33,8 +30,8 @@ router.get('/:id', (req, res, next) => {
     err.status = 400;
     return next(err);
   }
-
-  Folder.findById(id)
+  
+  Tag.findById(id)
     .then(results => {
       res.json(results);
     })
@@ -44,24 +41,24 @@ router.get('/:id', (req, res, next) => {
     });
 });
 
-// CREATE A NEW FOLDER
+// CREATE A NEW TAG
 router.post('/', (req, res, next) => {
   const { name } = req.body;
-  const newFolder = { name };
+  const newTag = { name };
   
-  if (!newFolder.name) {
+  if (!newTag.name) {
     const err = new Error('Missing `name` in request body');
     err.status = 400;
     return next(err);
   }
   
-  Folder.create(newFolder)
+  Tag.create(newTag)
     .then((result) => {
       res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);
     })
     .catch(err => {
       if (err.code === 11000) {
-        err = new Error('The folder name already exists');
+        err = new Error('The tag name already exists');
         err.status = 400;
       }
       console.error(`ERROR: ${err.message}`);
@@ -69,11 +66,12 @@ router.post('/', (req, res, next) => {
     });
 });
 
-// UPDATE A FOLDER
+
+// UPDATE A TAG
 router.put('/:id', (req, res, next) => {
   const id = req.params.id;
   const { name } = req.body;
-  const updateFolder = { name };
+  const updateTag = { name };
    
   if (!mongoose.Types.ObjectId.isValid(id)) {
     const err = new Error('The `id` is not valid');
@@ -81,13 +79,13 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
   
-  if (!updateFolder.name) {
+  if (!updateTag.name) {
     const err = new Error('Missing `name` in request body');
     err.status = 400;
     return next(err);
   }
   
-  Folder.findByIdAndUpdate(id, updateFolder, {new: true})
+  Tag.findByIdAndUpdate(id, updateTag, {new: true})
     .then(results => {
       if (results){
         res.json(results);
@@ -97,7 +95,7 @@ router.put('/:id', (req, res, next) => {
     })
     .catch(err => {
       if (err.code === 11000) {
-        err = new Error('The folder name already exists');
+        err = new Error('The tag name already exists');
         err.status = 400;
       }
       console.error(`ERROR: ${err.message}`);
@@ -105,7 +103,7 @@ router.put('/:id', (req, res, next) => {
     });
 });
 
-
+// DELETE A TAG
 router.delete('/:id', (req, res, next) => {
   const id = req.params.id;
   
@@ -115,28 +113,20 @@ router.delete('/:id', (req, res, next) => {
     return next(err);
   }
   
-  Folder.findByIdAndRemove(id)
+  Tag.findByIdAndRemove(id)
     .then(() => {
       return Note
-        .deleteMany({folderId: id});
+        .updateMany(
+          {'notes.tags': id},
+          { $pull: { 'tags': { id: id } } }
+        );
     })
     .then(() => res.sendStatus(204))
     .catch(err => {
       console.error(`ERROR: ${err.message}`);
       next(err);
     });
-    
-  // const folderRemovePromise = Folder.findByIdAndRemove( deleteId );
+}); 
 
-  // const noteRemovePromise = Note.deleteMany({ folderId: deleteId });
-
-  // Promise.all([folderRemovePromise, noteRemovePromise])
-  //   .then(() => {
-  //     res.status(204).end();
-  //   })
-  //   .catch(err => {
-  //     next(err);
-  //   });
-});
 
 module.exports = router;

@@ -10,11 +10,11 @@ const router = express.Router();
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
-  console.log(req.query);
+  // console.log(req.query);
   const searchTerm = req.query.searchTerm;
-  console.log(searchTerm);
+  // console.log(searchTerm);
   const selectedFolderId = req.query.folderId;
-  console.log(selectedFolderId);
+  // console.log(selectedFolderId);
   let filter = {};
 
   // console.log(req.query);
@@ -31,7 +31,7 @@ router.get('/', (req, res, next) => {
     filter.title = { $regex: searchTerm, $options: 'i'};
   }
 
-  console.log(filter);
+  // console.log(filter);
   
   Note.find(filter).sort({updatedAt: 'desc'})
     .then(results => {
@@ -65,14 +65,14 @@ router.get('/:id', (req, res, next) => {
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
-  const folderId = req.query.folderId;
-  const { title, content } = req.body;
-  const newNote = {
-    title, content
-    // title: title,
-    // content: content
-  };
+  // const folderId = req.query.folderId;
+  const { title, content, folderId } = req.body;
+  const newNote = { title, content };
   
+  if (folderId){
+    newNote.folderId = folderId;
+  }
+
   if (!newNote.title) {
     const err = new Error('Missing `title` in request body');
     err.status = 400;
@@ -104,10 +104,7 @@ router.put('/:id', (req, res, next) => {
   // const folderId = req.query.folderId;
   const id = req.params.id;
   const { title, content, folderId } = req.body;
-  const updateNote = {
-    title: title,
-    content: content
-  };
+  const updateNote = { title, content };
   
   if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
     const err = new Error('The folder `id` is not valid');
@@ -135,7 +132,7 @@ router.put('/:id', (req, res, next) => {
   Note.findByIdAndUpdate(id, updateNote, {new: true})
     .then(results => {
       if (results){
-        res.json(results);
+        res.status(200).json(results);
       } else {
         next();
       }

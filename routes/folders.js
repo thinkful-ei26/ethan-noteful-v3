@@ -118,13 +118,25 @@ router.delete('/:id', (req, res, next) => {
   Folder.findByIdAndRemove(deleteId)
     .then(() => {
       return Note
-        .deleteMany({folderId: deleteId})
-        .then(res.sendStatus(204));
+        .deleteMany({folderId: deleteId});
     })
+    .then(() => res.sendStatus(204))
     .catch(err => {
       console.error(`ERROR: ${err.message}`);
       next(err);
     });
+    
+  // const folderRemovePromise = Folder.findByIdAndRemove( deleteId );
+
+  // const noteRemovePromise = Note.deleteMany({ folderId: deleteId });
+
+  // Promise.all([folderRemovePromise, noteRemovePromise])
+  //   .then(() => {
+  //     res.status(204).end();
+  //   })
+  //   .catch(err => {
+  //     next(err);
+  //   });
 });
 
 module.exports = router;

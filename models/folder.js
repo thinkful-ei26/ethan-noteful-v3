@@ -9,9 +9,9 @@ const folderSchema = new mongoose.Schema({
 folderSchema.set('timestamps', true);
 
 folderSchema.set('toJSON', {
-  virtual: true,
+  virtuals: true,
   transform: (doc, ret) => {
-    ret.id = ret._id;
+    // ret.id = ret._id;
     delete ret._id;
     delete ret.__v; 
   }

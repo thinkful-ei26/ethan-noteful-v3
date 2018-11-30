@@ -117,8 +117,8 @@ router.delete('/:id', (req, res, next) => {
     .then(() => {
       return Note
         .updateMany(
-          {'notes.tags': id},
-          { $pull: { 'tags': { id: id } } }
+          {tags: id},
+          { $pull: { tags: id } }
         );
     })
     .then(() => res.sendStatus(204))

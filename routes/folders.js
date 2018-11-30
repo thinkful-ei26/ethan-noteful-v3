@@ -36,7 +36,11 @@ router.get('/:id', (req, res, next) => {
 
   Folder.findById(id)
     .then(results => {
-      res.json(results);
+      if(results) {
+        res.json(results);
+      } else { 
+        next(); 
+      }
     })
     .catch(err => {
       console.error(`ERROR: ${err.message}`);

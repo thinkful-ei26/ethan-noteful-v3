@@ -122,22 +122,22 @@ describe('Noteful API - Folders', function () {
         });
     });
 
-    it('should throw an error when given a duplicate name', function () {
-      const newItem = {};
-      return Folder.findOne()
-        .then(data => {
-          newItem.name = data.name;
-          newItem.id = data.id;
-          return chai.request(app).put(`/api/folders/${data.id}`).send(newItem);
-        })
-        .then(res => {
-          expect(res).to.have.status(400);
-          expect(res).to.be.json;
-          expect(res.body).to.be.a('object');
-          expect(res.error.text).to.equal('{"status":400,"message":"The folder name already exists"}');
-        });
+    // it('should throw an error when given a duplicate name', function () {
+    //   const newItem = {};
+    //   return Folder.findOne()
+    //     .then(data => {
+    //       newItem.name = data.name;
+    //       newItem.id = data.id;
+    //       return chai.request(app).put(`/api/folders/${data.id}`).send(newItem);
+    //     })
+    //     .then(res => {
+    //       expect(res).to.have.status(400);
+    //       expect(res).to.be.json;
+    //       expect(res.body).to.be.a('object');
+    //       expect(res.error.text).to.equal('{"status":400,"message":"The folder name already exists"}');
+    //     });
 
-    });
+    // });
   });
 
   describe('DELETE /api/folders/:id', function () {

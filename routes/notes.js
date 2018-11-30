@@ -10,21 +10,28 @@ const router = express.Router();
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
+  console.log(req.query);
   const searchTerm = req.query.searchTerm;
-  const folderId = req.query.folderId;
+  console.log(searchTerm);
+  const selectedFolderId = req.query.folderId;
+  console.log(selectedFolderId);
   let filter = {};
+
+  // console.log(req.query);
   
-  if (folderId) {
-    filter.folderId =  folderId;
+  if (selectedFolderId) {
+    filter.folderId = selectedFolderId;
   }
 
   if (searchTerm) {
     const re = new RegExp(searchTerm, 'i');
     filter.$or = [{ 'title': re }, { 'content': re }];
   }
-  // if (searchTerm) {
-  //   filter.title = { $regex: searchTerm, $options: 'i'};
-  // }
+  if (searchTerm) {
+    filter.title = { $regex: searchTerm, $options: 'i'};
+  }
+
+  console.log(filter);
   
   Note.find(filter).sort({updatedAt: 'desc'})
     .then(results => {
@@ -39,7 +46,6 @@ router.get('/', (req, res, next) => {
 /* ========== GET/READ A SINGLE ITEM ========== */
 router.get('/:id', (req, res, next) => {
   const id = req.params.id;
-  const folderId = req.query.folderId;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     const err = new Error('The `id` is not valid');
@@ -95,9 +101,9 @@ router.post('/', (req, res, next) => {
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/:id', (req, res, next) => {
-  const folderId = req.query.folderId;
+  // const folderId = req.query.folderId;
   const id = req.params.id;
-  const { title, content } = req.body;
+  const { title, content, folderId } = req.body;
   const updateNote = {
     title: title,
     content: content
@@ -119,6 +125,10 @@ router.put('/:id', (req, res, next) => {
     const err = new Error('Missing `title` in request body');
     err.status = 400;
     return next(err);
+  }
+  
+  if (folderId){
+    updateNote.folderId = folderId;
   }
   
   // Note.findByIdAndUpdate(id, { $set: {title: updateNote.title, content: updateNote.content} }, {new: true})

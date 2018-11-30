@@ -13,7 +13,7 @@ const router = express.Router();
 
 // GET ALL FOLDERS
 router.get('/', (req, res, next) => {
-  Folder.find().sort({name: 'asc'})
+  Folder.find({}).sort({name: 'asc'})
     .then(results => {
       res.json(results);
     })

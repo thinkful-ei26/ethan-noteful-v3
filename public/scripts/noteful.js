@@ -137,6 +137,9 @@ const noteful = (function () {
 
       const noteId = getNoteIdFromElement(event.currentTarget);
 
+      console.log(noteId);
+
+
       api.details(`/api/notes/${noteId}`)
         .then((response) => {
           store.currentNote = response;
@@ -241,7 +244,7 @@ const noteful = (function () {
       if (folderId !== store.currentNote.folderId) {
         store.currentNote = {};
       }
-
+      console.log(folderId);
       api.search('/api/notes', store.currentQuery)
         .then(response => {
           store.notes = response;
@@ -304,6 +307,9 @@ const noteful = (function () {
       event.preventDefault();
 
       const tagId = getTagIdFromElement(event.currentTarget);
+
+      // console.log(tagId);
+
       store.currentQuery.tagId = tagId;
 
       store.currentNote = {};
